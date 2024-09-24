@@ -231,14 +231,6 @@ def main():
     
     root.mainloop()
 
-# These are for setting up interactivate figure functions
-click_state = True
-cursor_a = None
-cursor_b = None
-cursor_a_line = None
-cursor_b_line = None        
-
-
 if __name__ == "__main__":
     # These are for setting up interactivate figure functions
     click_state = True
