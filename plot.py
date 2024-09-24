@@ -236,7 +236,7 @@ if __name__ == "__main__":
     click_state = True
     cursor_start = None
     cursor_end = None
-    cursor_start_line = None
-    cursor_end_line = None
+    cursor_a_line = None
+    cursor_b_line = None
     
     main()
