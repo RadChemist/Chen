@@ -78,7 +78,13 @@ def plot_rv(twn_time, log_scale):
 
     plt.show()
 
-def openrvdata(lb_columns,ava_cols):
+def openrvdata(lb_columns, ava_cols, lb_selected_col, cols_y):
+    
+    ava_cols.set('')
+    lb_columns.update()
+    cols_y.set('')
+    lb_selected_col.update()
+    
     file_path = filedialog.askopenfilename(
         title="Open a File",
         filetypes=(("csv files", "*.csv"), ("All files", "*.*"))
@@ -226,7 +232,7 @@ def main():
     
     #create a menu for opening file
     menu_of=Menu(root)
-    menu_of.add_command(label='Open',command=lambda: openrvdata(lb_columns, ava_cols))
+    menu_of.add_command(label='Open',command=lambda: openrvdata(lb_columns, ava_cols, lb_selected_col, cols_y))
     root.config(menu=menu_of)
     
     root.mainloop()
