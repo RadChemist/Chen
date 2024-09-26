@@ -279,7 +279,6 @@ def main():
     Button(frame_butt, text='Remove', command=lambda: remove_selected(lb_selected_col, cols_y)).grid(row=2)
     Button(frame_butt, text='Remove All', command=lambda: remove_all(lb_selected_col, cols_y)).grid(row=3)   
     Button(frame_butt, text='Plot', command=lambda: plot_rv(twn_time, log_scale)).grid(row=4)
-    #Button(frame_butt, text='Remove Cursors',command=lambda: remove_cursor(fig,ax)).grid(row=5)
    
     # Checkbox for log scale and plot with TWN time
     Checkbutton(frame_butt, text="Log scale", variable=log_scale, onvalue = True, offvalue = False).grid(row=6)
