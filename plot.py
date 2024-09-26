@@ -216,7 +216,7 @@ def help_rvplot(root):
     #showing help message about how to use this script.
     help_win = Toplevel(root)
     help_win.title('How to use this script')
-    help_win.geometry('600x400+800+200')
+    help_win.geometry('900x400+800+200')
     helptext = """
     
     - Only take .csv file, sorry.
@@ -236,7 +236,7 @@ def help_rvplot(root):
     Chen, Hung Cheng
     """
     # Create a Label widget to display the help text
-    help_info = ttk.Label(help_win, text=helptext, padding='10 10 10 10', justify='left')
+    help_info = ttk.Label(help_win, text=helptext, padding='10 10 10 10', justify='left',font=('Arial',12))
     help_info.pack(fill=BOTH, expand=True)
 
     # Add a close button
