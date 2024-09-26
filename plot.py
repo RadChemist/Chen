@@ -212,9 +212,37 @@ def plot_all():
     ax.legend()
     plt.show()
     
-def help_plot():
+def help_rvplot(root):
     #showing help message about how to use this script.
-    print('help')
+    help_win = Toplevel(root)
+    help_win.title('How to use this script')
+    help_win.geometry('400x400+800+200')
+    helptext = """
+    
+    - Only take .csv file, sorry.
+    - Load recorder viewer data: Click on the 'Open' button and select your CSV file.
+    - Plot data: 
+        1. select channels from 'Available Channels' then click 'Add' button to add these channels to 'Selected Channels'.
+        2. Click 'Plot' to plot data
+        3. You can remove channels from 'Selected Channels' by selecting channels then click 'Remove'
+        4. 'Remove All' will remove all channels from 'Selected Channels'
+    
+    - Log Scale: Enable the log scale by checking the 'Log Scale' checkbox.
+    - TWN Time: Convert UTC time to Taiwan local time
+    
+    - In the plot
+        1. Right click inside the plot to add and remove cursors 
+
+    Chen, Hung Cheng
+    """
+    # Create a Label widget to display the help text
+    help_info = ttk.Label(help_win, text=helptext, padding='10 10 10 10', justify='left')
+    help_info.pack(fill=BOTH, expand=True)
+
+    # Add a close button
+    close_button = ttk.Button(help_win, text='Close', command=help_win.destroy)
+    close_button.pack(pady=10)
+    
 
 def main():
     root=Tk()
