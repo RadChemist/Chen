@@ -78,8 +78,6 @@ def plot_rv(twn_time, log_scale):
     marker.cur_a_line = []
     marker.cur_b_line = []
     plt.show()
-    #%matplotlib
-    #plt.pause()
 
 def openrvdata(lb_columns, ava_cols, lb_selected_col, cols_y):
     
