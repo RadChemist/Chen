@@ -256,7 +256,7 @@ def main():
     menu_bar=Menu(menu_bar,tearoff=0)
     menu_bar.add_command(label='Open',command=lambda: openrvdata(lb_columns, ava_cols, lb_selected_col, cols_y))
     menu_bar.add_command(label="I'm lazy", command=lambda: plot_all())
-    menu_bar.add_command(label='Help', command=lambda: help_plot())
+    menu_bar.add_command(label='Help', command=lambda: help_rvplot())
     root.config(menu=menu_bar)
     
     #variables for the GUI
