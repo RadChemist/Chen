@@ -216,7 +216,7 @@ def help_rvplot(root):
     #showing help message about how to use this script.
     help_win = Toplevel(root)
     help_win.title('How to use this script')
-    help_win.geometry('400x400+800+200')
+    help_win.geometry('600x400+800+200')
     helptext = """
     
     - Only take .csv file, sorry.
