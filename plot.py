@@ -70,13 +70,16 @@ def plot_rv(twn_time, log_scale):
     coords = []     
     ax.legend()
     
-    #For plot start and end cursors repeatedly 
+    #For plot start and end cursors repeatedly with "right_click" function.
+    fig.canvas.mpl_connect('button_press_event', lambda event: right_click_menu(event, fig, ax))
     
-    global cid
-    
-    cid = fig.canvas.mpl_connect('button_press_event', lambda event: right_click(event, fig, ax))
-
+    plot_rv.cura = False
+    plot_rv.curb = False
+    marker.cur_a_line = []
+    marker.cur_b_line = []
     plt.show()
+    #%matplotlib
+    #plt.pause()
 
 def openrvdata(lb_columns, ava_cols, lb_selected_col, cols_y):
     
@@ -105,60 +108,89 @@ def openrvdata(lb_columns, ava_cols, lb_selected_col, cols_y):
             return None, None
 
 
-def right_click(event, fig, ax):
+def marker(event, fig, ax, curs):
     """Updates the start and end cursors based on mouse clicks."""
 
-    global click_state, cursor_a, cursor_b, cursor_a_line, cursor_b_line
+    if curs == 'A':
+        cursor_ax, nt_y = nearby(event.xdata, event.ydata, plot_rv.selected, plot_rv.time, openrvdata.df)
+        # Remove the existing end line and annotation if they exist
+        if plot_rv.cura:
+            for item in marker.cur_a_line:
+                item.remove()  # Properly remove Line2D and Annotation objects
+            marker.cur_a_line = []
+            
+        # Add new vertical line and annotation for cursor_end
+        marker.cur_a_line = [
+            ax.axvline(x=cursor_ax, color='blue', linestyle='--', label='A'),
+            ax.annotate(
+               f"X: {cursor_ax.strftime('%Y-%m-%d %H:%M:%S')}\nY: {nt_y:.3f}",
+               xy=(cursor_ax, nt_y), xycoords='data',
+               xytext=(10, 10), textcoords='offset points',
+               bbox=dict(boxstyle="round,pad=0.3", edgecolor='black', facecolor='white', alpha=0.7))
+                    ]
 
-    if event.button == 3:  # Right mouse button
+        plot_rv.cura = True  # True, if there is cursor A in the plot.
+        
+    elif curs == 'B':
+        cursor_bx, nt_y = nearby(event.xdata, event.ydata, plot_rv.selected, plot_rv.time, openrvdata.df)
+        # Remove the existing start line and annotation if they exist
+        if plot_rv.curb:
+            for item in marker.cur_b_line:
+                item.remove()  # Properly remove Line2D and Annotation objects
+            marker.cur_b_line = []
+            
+        # Add new vertical line and annotation for cursor_start
+        marker.cur_b_line = [
+            ax.axvline(x=cursor_bx, color='red', linestyle='--', label='B'),
+            ax.annotate(
+                f"X: {cursor_bx.strftime('%Y-%m-%d %H:%M:%S')}\nY: {nt_y:.3f}",
+                xy=(cursor_bx, nt_y), xycoords='data',
+                xytext=(10, 10), textcoords='offset points',
+                bbox=dict(boxstyle="round,pad=0.3", edgecolor='black', facecolor='white', alpha=0.7))
+                    ]
+            
+        plot_rv.curb = True  # True, if there is cursor B in the plot
+    
+    elif curs == 'ra':
+        
+        for item in marker.cur_a_line:
+            item.remove()  # Properly remove Line2D and Annotation objects
+        marker.cur_a_line = []
+        plot_rv.cura = False
+        
+    elif curs == 'rb':
+        for item in marker.cur_b_line:
+            item.remove()  # Properly remove Line2D and Annotation objects
+        marker.cur_b_line = []
+        plot_rv.curb = False
+
+    elif curs == 'rall':
+        for item in marker.cur_a_line + marker.cur_b_line:
+            item.remove()  # Properly remove Line2D and Annotation objects
+        marker.cur_a_line = []
+        marker.cur_b_line = []
+        plot_rv.cura = False
+        plot_rv.curb = False
+
+    else:
+        print('Life is nothing but an electron looking for a place to rest.\n')
+    
+    ax.legend()
+    fig.canvas.draw()  # Redraw the canvas to show cursor_end
+
+
+def right_click_menu(event, fig, ax):
+    #right_click_menu
+    if event.button == 3:
         if event.inaxes == ax:  # Ensure click happens inside the axes
-            if click_state:  # First click to add or update cursor_start
-                
-                cursor_ax, nt_y = nearby(event.xdata, event.ydata, plot_rv.selected, plot_rv.time, openrvdata.df)
+            menu_rclick =  Menu(fig.canvas.get_tk_widget(), tearoff=0)
+            menu_rclick.add_command(label='Add Cursor A', command=lambda: marker(event, fig, ax, 'A'))
+            menu_rclick.add_command(label='Add Cursor B', command=lambda: marker(event, fig, ax, 'B'))
+            menu_rclick.add_command(label="Remove Cursor A", command=lambda: marker(event, fig, ax, 'ra'))
+            menu_rclick.add_command(label="Remove Cursor B", command=lambda: marker(event, fig, ax, 'rb'))
+            menu_rclick.add_command(label="Remove Cursors", command=lambda: marker(event, fig, ax, 'rall'))
+            menu_rclick.post(event.guiEvent.x_root, event.guiEvent.y_root)
 
-                # Remove the existing start line and annotation if they exist
-                if cursor_a_line:
-                    for item in cursor_a_line:
-                        item.remove()  # Properly remove Line2D and Annotation objects
-                    cursor_a_line = []
-
-                # Add new vertical line and annotation for cursor_start
-                cursor_a_line = [
-                    ax.axvline(x=cursor_ax, color='red', linestyle='--', label='A'),
-                    ax.annotate(
-                        f"X: {cursor_ax.strftime('%Y-%m-%d %H:%M:%S')}\nY: {nt_y:.3f}",
-                        xy=(cursor_ax, nt_y), xycoords='data',
-                        xytext=(10, 10), textcoords='offset points',
-                        bbox=dict(boxstyle="round,pad=0.3", edgecolor='black', facecolor='white', alpha=0.7)
-                    )
-                ]
-                ax.legend()
-                fig.canvas.draw()  # Redraw the canvas to show cursor_start
-                click_state = False  # Toggle to add or update cursor_end on next click
-
-            else:  # Second click to add or update cursor_end
-                cursor_bx, nt_y = nearby(event.xdata, event.ydata, plot_rv.selected, plot_rv.time, openrvdata.df)
-                #cursor_b = num2date(event.xdata).replace(tzinfo=None)
-
-                # Remove the existing end line and annotation if they exist
-                if cursor_b_line:
-                    for item in cursor_b_line:
-                        item.remove()  # Properly remove Line2D and Annotation objects
-                    cursor_b_line = []
-
-                # Add new vertical line and annotation for cursor_end
-                cursor_b_line = [
-                    ax.axvline(x=cursor_bx, color='blue', linestyle='--', label='B'),
-                    ax.annotate(
-                        f"X: {cursor_bx.strftime('%Y-%m-%d %H:%M:%S')}\nY: {nt_y:.3f}",
-                        xy=(cursor_bx, nt_y), xycoords='data',
-                        xytext=(10, 10), textcoords='offset points',
-                        bbox=dict(boxstyle="round,pad=0.3", edgecolor='black', facecolor='white', alpha=0.7)
-                    )
-                ]
-                ax.legend()
-                fig.canvas.draw()  # Redraw the canvas to show cursor_end
-                click_state = True  # Reset back to updating cursor_start on next click
 
 def nearby(curx, cury, mark_col, time_col, rvdf):  
     
@@ -171,6 +203,20 @@ def nearby(curx, cury, mark_col, time_col, rvdf):
     nearest_x = rvdf.loc[min_index, time_col]
 
     return nearest_x, nearest_y
+        
+def plot_all():
+    # Asking input a data range and zoom-in then plot every channels and save it. 
+    for cols in plot_rv.selected:
+        fig, ax = plt.subplots()
+        ax.plot(openrvdata.df['Date UTC'], openrvdata.df[cols], 'o-', label=cols)
+    
+    plt.xlabel('UTC Time')
+    ax.legend()
+    plt.show()
+    
+def help_plot():
+    #showing help message about how to use this script.
+    print('help')
 
 def main():
     root=Tk()
@@ -179,20 +225,13 @@ def main():
     root.grid_columnconfigure([0,1], weight=1)
     root.option_add('*tearOFF',False)  
     
-    frame_col=ttk.Labelframe(root,padding='5 5 7 10',text='Available Channels')
-    frame_col.grid(row=1, column=0, sticky="nsew")
-    frame_col.grid_rowconfigure([1,2,3],weight=1)
-    frame_col.grid_columnconfigure(0,weight=1)
-    
-    frame_sel=ttk.Labelframe(root,padding='5 5 7 10',text='Selected Channels')
-    frame_sel.grid(row=1, column=1, sticky="nsew")
-    frame_sel.grid_rowconfigure([1,2,3],weight=1)
-    frame_sel.grid_columnconfigure(0,weight=1)
-        
-    frame_butt=ttk.Frame(root,padding='5 5 10 10')
-    frame_butt.grid(row=1, column=2)
-    frame_butt.grid_rowconfigure(0,weight=1)
-    frame_butt.grid_columnconfigure(0,weight=1)
+    #create a menu for opening file
+    menu_bar=Menu(root)
+    menu_bar=Menu(menu_bar,tearoff=0)
+    menu_bar.add_command(label='Open',command=lambda: openrvdata(lb_columns, ava_cols, lb_selected_col, cols_y))
+    menu_bar.add_command(label="I'm lazy", command=lambda: plot_all())
+    menu_bar.add_command(label='Help', command=lambda: help_plot())
+    root.config(menu=menu_bar)
     
     #variables for the GUI
     ava_cols=StringVar() 
@@ -201,48 +240,52 @@ def main():
     twn_time=BooleanVar()
     rvinfo=StringVar()
     
-    #information window
+    #space for easy to read GUI
     rvdata_time=ttk.Label(root,textvariable=rvinfo,padding='5 5 5 5')
-    rvinfo.set('Cursor position testing now')
-    rvdata_time.grid(row=0,column=0,columnspan=3,sticky='ew')
+    rvinfo.set('')
+    rvdata_time.grid(row=0,column=0,columnspan=3,sticky='ew')  
     
-    # Available columns listbox
+    # Available columns setup
+    frame_col=ttk.Labelframe(root,padding='5 5 7 10',text='Available Channels')
+    frame_col.grid(row=1, column=0, sticky="nsew")
+    frame_col.grid_rowconfigure([1,2,3],weight=1)
+    frame_col.grid_columnconfigure(0,weight=1)
+       
     lb_columns = Listbox(frame_col, listvariable=ava_cols, selectmode='extended')
     lb_columns.grid(row=1,column=0, rowspan=3,sticky='nsew')
     lb_columns_sb = ttk.Scrollbar(frame_col, orient='vertical', command=lb_columns.yview)
     lb_columns.config(yscrollcommand=lb_columns_sb.set)
     lb_columns_sb.grid(row=1,column=1,rowspan=3,sticky='ns')
     
-    # Selected columns listbox
+    #Selected Channels column setup 
+    frame_sel=ttk.Labelframe(root,padding='5 5 7 10',text='Selected Channels')
+    frame_sel.grid(row=1, column=1, sticky="nsew")
+    frame_sel.grid_rowconfigure([1,2,3],weight=1)
+    frame_sel.grid_columnconfigure(0,weight=1)
+
     lb_selected_col = Listbox(frame_sel, listvariable=cols_y, selectmode='extended')
     lb_selected_col.grid(row=1,column=0,rowspan=3,sticky='nsew')
     lb_selected_col_sb = ttk.Scrollbar(frame_sel, orient='vertical', command=lb_selected_col.yview)
     lb_selected_col.config(yscrollcommand=lb_selected_col_sb.set)
     lb_selected_col_sb.grid(row=1,column=1,rowspan=3,sticky='ns')    
+
+    #Buttons and clickboxes setup  
+    frame_butt=ttk.Frame(root,padding='5 5 10 10')
+    frame_butt.grid(row=1, column=2)
+    frame_butt.grid_rowconfigure(0,weight=1)
+    frame_butt.grid_columnconfigure(0,weight=1)
     
-    # Buttons
     Button(frame_butt, text='Add', command=lambda: selected_channels(lb_columns, lb_selected_col, cols_y)).grid(row=1)
     Button(frame_butt, text='Remove', command=lambda: remove_selected(lb_selected_col, cols_y)).grid(row=2)
     Button(frame_butt, text='Remove All', command=lambda: remove_all(lb_selected_col, cols_y)).grid(row=3)   
     Button(frame_butt, text='Plot', command=lambda: plot_rv(twn_time, log_scale)).grid(row=4)
-        
+    #Button(frame_butt, text='Remove Cursors',command=lambda: remove_cursor(fig,ax)).grid(row=5)
+   
     # Checkbox for log scale and plot with TWN time
-    Checkbutton(frame_butt, text="Log scale", variable=log_scale, onvalue = True, offvalue = False).grid(row=5)
-    Checkbutton(frame_butt, text='TWN Time', variable=twn_time, onvalue = True, offvalue = False).grid(row=6)
+    Checkbutton(frame_butt, text="Log scale", variable=log_scale, onvalue = True, offvalue = False).grid(row=6)
+    Checkbutton(frame_butt, text='TWN Time', variable=twn_time, onvalue = True, offvalue = False).grid(row=7)
     
-    #create a menu for opening file
-    menu_of=Menu(root)
-    menu_of.add_command(label='Open',command=lambda: openrvdata(lb_columns, ava_cols, lb_selected_col, cols_y))
-    root.config(menu=menu_of)
-    
-    root.mainloop()
+    root.mainloop()     
 
 if __name__ == "__main__":
-    # These are for setting up interactivate figure functions
-    click_state = True
-    cursor_start = None
-    cursor_end = None
-    cursor_a_line = None
-    cursor_b_line = None
-    
     main()
